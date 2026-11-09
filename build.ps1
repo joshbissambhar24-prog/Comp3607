@@ -8,7 +8,11 @@ if ([string]::IsNullOrWhiteSpace($BlueJJar)) {
         "${env:ProgramFiles(x86)}\BlueJ\lib\bluej.jar",
         "$env:LOCALAPPDATA\Programs\BlueJ\lib\bluej.jar"
     )
-    $BlueJJar = $candidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+    # Also support BlueJ's extracted Windows distribution (e.g. Downloads\BlueJ-windows-6.0.1\bluej\lib\bluej.jar).
+    $downloaded = Get-ChildItem -Path (Join-Path $env:USERPROFILE 'Downloads') -Filter 'BlueJ-windows-*' -Directory -ErrorAction SilentlyContinue |
+        Sort-Object Name -Descending |
+        ForEach-Object { Join-Path $_.FullName 'bluej\lib\bluej.jar' }
+    $BlueJJar = @($candidates) + @($downloaded) | Where-Object { $_ -and (Test-Path $_) } | Select-Object -First 1
 }
 if (-not $BlueJJar -or -not (Test-Path $BlueJJar)) {
     throw "Could not find BlueJ's lib\bluej.jar. Run .\build.ps1 -BlueJJar 'C:\path\to\BlueJ\lib\bluej.jar'"

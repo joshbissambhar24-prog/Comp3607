@@ -9,7 +9,7 @@ Java 21 / BlueJ 5.4+ (including 6.x) / Maven / JUnit 5 / JaCoCo. This repo start
 - Bounded editor **snapshot polling every 3 seconds** to estimate changes, edit cadence and idle time (no keystroke interception).
 - `Tools > Telemetry Analytics > Export JSON + PDF now` and `Import console output (paste summary)`.
 - Session recording, compile interval/error aggregators, inferred active/idle time (60-second activity windows), typed JSON events and a two-page native Java PDF with charts/tables.
-- JUnit 5 unit tests and JaCoCo 75% line coverage rule for core/export packages. Git repository files and a worked demo.
+- JUnit 5 unit tests and JaCoCo 75% line coverage rule for core/export packages. Git repository files and a worked demo. See `docs/FIXES_AND_VERIFICATION.md` for archive updates.
 
 ## Build on Windows using PowerShell
 

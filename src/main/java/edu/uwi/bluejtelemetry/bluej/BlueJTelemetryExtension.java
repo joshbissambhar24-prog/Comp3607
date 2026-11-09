@@ -258,10 +258,10 @@ public final class BlueJTelemetryExtension extends Extension
         if (!recorder.active()) return;
         String status = event.getEventType().name();
         String cls = event.getClassName() == null ? "" : event.getClassName();
-        String method = event.getMethodName() == null ? "<constructor>" : event.getMethodName();
+        String method = InvocationOutcome.methodName(event.getMethodName());
         bus.publish(execution.create(EventType.EXECUTION_FINISHED, cls, clock.instant(),
             Map.of("method", method, "status", status)));
-        if (status.equals("EXCEPTION_EXIT"))
+        if (InvocationOutcome.isRuntimeException(status))
             bus.publish(execution.create(EventType.RUNTIME_EXCEPTION, cls, clock.instant(),
                 Map.of("method", method, "exception_details_available", false)));
     }
