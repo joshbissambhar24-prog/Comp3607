@@ -1,0 +1,10 @@
+/target/
+/.tmp/
+/lib/*.jar
+*.class
+*.log
+/telemetry-reports/
+/demo-output/
+.idea/
+.vscode/
+.DS_Store

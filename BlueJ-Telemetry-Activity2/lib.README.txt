@@ -1,0 +1,4 @@
+Before building, create a directory called lib at the project root, and copy
+BLUEJ_INSTALL_DIR/lib/bluej.jar into lib/bluej.jar.
+Do NOT commit the BlueJ jar to GitHub: .gitignore excludes it.
+Alternative: run mvn -Dbluej.jar="C:\Program Files\BlueJ\lib\bluej.jar" clean verify
