@@ -51,7 +51,7 @@ public final class BlueJTelemetryExtension extends Extension
     private final EventCreator.Lifecycle lifecycle = new EventCreator.Lifecycle();
     private final EventCreator.Compiler compiler = new EventCreator.Compiler();
     private final EventCreator.Execution execution = new EventCreator.Execution();
-    private final ErrorClassifier errorClassifier = new ErrorClassifier();
+    private final BlueJEventMapper mapper = new BlueJEventMapper();
     private final MetricsAggregator aggregator = new MetricsAggregator();
     private final ExportService exports = new ExportService(List.of(
         new JsonReportExporter(aggregator), new PdfReportExporter(aggregator)));
@@ -224,15 +224,15 @@ public final class BlueJTelemetryExtension extends Extension
     }
     @Override public void compileStarted(CompileEvent event) {
         if (!recorder.active() || !event.isUserGeneratedCompilation()) return;
-        bus.publish(compiler.create(EventType.COMPILE_STARTED, files(event), clock.instant(), Map.of()));
+        bus.publish(mapper.compilation(EventType.COMPILE_STARTED, files(event), clock.instant()));
     }
     @Override public void compileSucceeded(CompileEvent event) {
         if (!recorder.active() || !event.isUserGeneratedCompilation()) return;
-        bus.publish(compiler.create(EventType.COMPILE_SUCCEEDED, files(event), clock.instant(), Map.of()));
+        bus.publish(mapper.compilation(EventType.COMPILE_SUCCEEDED, files(event), clock.instant()));
     }
     @Override public void compileFailed(CompileEvent event) {
         if (!recorder.active() || !event.isUserGeneratedCompilation()) return;
-        bus.publish(compiler.create(EventType.COMPILE_FAILED, files(event), clock.instant(), Map.of()));
+        bus.publish(mapper.compilation(EventType.COMPILE_FAILED, files(event), clock.instant()));
     }
     @Override public void compileError(CompileEvent event) {
         recordCompilerDiagnostic(event, EventType.COMPILATION_ERROR);
@@ -242,13 +242,8 @@ public final class BlueJTelemetryExtension extends Extension
     }
     private void recordCompilerDiagnostic(CompileEvent event, EventType t) {
         if (!recorder.active() || !event.isUserGeneratedCompilation()) return;
-        String message = event.getErrorMessage() == null ? "" : event.getErrorMessage();
-        Map<String,Object> attrs = new HashMap<>();
-        attrs.put("message", message);
-        attrs.put("line_number", event.getErrorLineNumber());
-        attrs.put("category", errorClassifier.category(message));
-        attrs.put("error_code", errorClassifier.explicitCode(message));
-        bus.publish(compiler.create(t, files(event), clock.instant(), attrs));
+        bus.publish(mapper.diagnostic(t, files(event), clock.instant(),
+            event.getErrorMessage(), event.getErrorLineNumber()));
     }
     private String files(CompileEvent event) {
         java.io.File[] files = event.getFiles();
@@ -256,14 +251,9 @@ public final class BlueJTelemetryExtension extends Extension
     }
     @Override public void invocationFinished(InvocationFinishedEvent event) {
         if (!recorder.active()) return;
-        String status = event.getEventType().name();
-        String cls = event.getClassName() == null ? "" : event.getClassName();
-        String method = InvocationOutcome.methodName(event.getMethodName());
-        bus.publish(execution.create(EventType.EXECUTION_FINISHED, cls, clock.instant(),
-            Map.of("method", method, "status", status)));
-        if (InvocationOutcome.isRuntimeException(status))
-            bus.publish(execution.create(EventType.RUNTIME_EXCEPTION, cls, clock.instant(),
-                Map.of("method", method, "exception_details_available", false)));
+        for (TelemetryEvent mapped : mapper.invocation(event.getClassName(),
+            event.getMethodName(), event.getEventType().name(), clock.instant()))
+            bus.publish(mapped);
     }
     @Override public void terminate() {
         scheduler.shutdownNow();

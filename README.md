@@ -95,7 +95,7 @@ Run the test suite and generate the coverage report with:
 Start-Process ".\target\site\jacoco\index.html"
 ```
 
-The most recently verified local build (November 9, 2026) reported:
+The last verified **Windows** build (November 9, 2026, before these additional mapping tests) reported:
 
 | Measure | Result |
 | --- | ---: |
@@ -152,3 +152,19 @@ The implementation separates BlueJ integration, event recording, metric calculat
 Built as a **three-member team project** for COMP3607 at UWI St. Augustine. Add the names and contributions of the three team members here before final submission.
 
 **Note:** `STUDENT_ID_PLACEHOLDER` is intentional as a default metadata value. Avoid committing personal student data or real student telemetry to a public repository without permission.
+
+## Verification checklist for a team demo
+
+Before claiming that the current revision is verified in BlueJ, build and run it on the target machine:
+
+1. Run `./build.ps1` in Windows PowerShell and confirm the Maven test summary and coverage check.
+2. Replace the existing extension JAR in the BlueJ project `extensions2/` folder; reopen the project.
+3. Create a class, compile it successfully, introduce a compiler error, fix it and compile again.
+4. Invoke a method that throws an exception and verify the exported JSON includes `RUNTIME_EXCEPTION`.
+5. Create and delete a test class and inspect JSON for `CLASS_CREATED` and `CLASS_DELETED`.
+6. Copy BlueJ terminal text into **Import console output (paste summary)** and confirm the JSON console summary.
+7. Export JSON and PDF and confirm timestamps, session metadata, and a two-page PDF.
+
+The current code additionally tests event mapping without a running BlueJ GUI via `BlueJEventMapperTest`. This is not a substitute for end-to-end integration testing.
+
+The student's ID remains a configurable placeholder, as the assessment explicitly permits. Team member names and responsibilities should be supplied by the team rather than guessed.
