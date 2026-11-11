@@ -76,6 +76,12 @@ The build compiles against BlueJ's local `bluej.jar`. This dependency is not inc
 
 5. Close and reopen the BlueJ project. The extension should appear under **Tools → Telemetry Analytics**.
 
+### Student ID Configuration
+
+The plugin uses `STUDENT_ID_PLACEHOLDER` as the default student identifier in generated JSON and PDF reports. This is intentional, as the plugin is designed to support multiple students rather than being restricted to one user.
+
+The student ID can be configured using the Java system property `bluej.telemetry.studentId`. If no ID is provided, the default placeholder is retained. This supports reusability while protecting student information.
+
 ## Using the extension
 
 1. Create, edit and compile Java classes in BlueJ. Include a successful and a failed compilation to test diagnostics.
