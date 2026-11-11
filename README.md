@@ -158,6 +158,6 @@ The implementation separates BlueJ integration, event recording, metric calculat
 Built as a **three-member team project** for COMP3607 at UWI St. Augustine. 
 816046555 Josh Bissambhar
 816042947 Stephen Seeraj
-Jerell Balroop
+816043171 Jerell Balroop
 
 
