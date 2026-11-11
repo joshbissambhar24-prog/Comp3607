@@ -1,101 +1,154 @@
-# BlueJ Telemetry Analytics Plugin — Activity 2
+# BlueJ Telemetry Analytics Plugin
 
-Java 21 / BlueJ 5.4+ (including 6.x) / Maven / JUnit 5 / JaCoCo. This repo starts from the team's Activity 1 scope and extends it for Activity 2's mandatory deliverables. Due **November 9, 2026, 10:00 PM**.
+A Java extension for **BlueJ** that records programming-session activity and generates structured **JSON telemetry** and a **two-page PDF analytics report**. Developed for the **COMP3607 Object-Oriented Programming** team project at The University of the West Indies, St. Augustine.
 
-## What is included
+**Repository:** https://github.com/joshbissambhar24-prog/Comp3607
 
-- BlueJ extension `edu.uwi.bluejtelemetry.bluej.BlueJTelemetryExtension` with a real BlueJ `Main-Class` manifest.
-- Listeners: project/package, class state/rename/remove, user-generated compilation events, invocation completion and exception status.
-- Bounded editor **snapshot polling every 3 seconds** to estimate changes, edit cadence and idle time (no keystroke interception).
-- `Tools > Telemetry Analytics > Export JSON + PDF now` and `Import console output (paste summary)`.
-- Session recording, compile interval/error aggregators, inferred active/idle time (60-second activity windows), typed JSON events and a two-page native Java PDF with charts/tables.
-- JUnit 5 unit tests and JaCoCo 75% line coverage rule for core/export packages. Git repository files and a worked demo. See `docs/FIXES_AND_VERIFICATION.md` for archive updates.
+## Overview
 
-## Build on Windows using PowerShell
+The plugin helps describe how a learner works on a Java project in BlueJ. It monitors supported project, class, compilation and execution events, samples source-code changes, and calculates session metrics. Users can export the session at any time or when the project closes.
 
-1. Install **BlueJ 5.4 or newer**, **Java JDK 21**, and **Apache Maven**. Check Java and Maven in PowerShell:
+### Features
+
+| Area | Functionality |
+| --- | --- |
+| Project lifecycle | Records project opening and closing |
+| Class lifecycle | Detects class creation, modifications, renaming and deletion where observable |
+| Editor activity | Samples source content approximately every 3 seconds to estimate edit batches, changed characters, editing cadence and idle time |
+| Compilation | Counts user-generated attempts, successes and failures; records diagnostic messages, categories and line numbers |
+| Execution | Records supported method/constructor invocations and their completion or exception status |
+| Console output | Allows users to **manually paste** BlueJ terminal text for a summary |
+| JSON export | Produces timestamped event records, session metadata and aggregate metrics |
+| PDF report | Produces a two-page report with compilation charts, active/idle estimates, error frequencies and class/method progression |
+
+## Requirements
+
+- **Java JDK 21**
+- **Apache Maven**
+- **BlueJ 5.4+** (tested with **BlueJ 6.0.1** on Windows)
+- **Windows PowerShell** to run the supplied build script
+
+The build compiles against BlueJ's local `bluej.jar`. This dependency is not included in the repository.
+
+## Build and installation
+
+1. Clone the repository and open it in VS Code or a terminal:
+
+   ```powershell
+   git clone https://github.com/joshbissambhar24-prog/Comp3607.git
+   cd Comp3607
+   ```
+
+2. Verify Java and Maven:
 
    ```powershell
    java -version
    mvn -version
    ```
 
-2. Copy BlueJ's own `bluej.jar` into this project. The location is normally `C:\Program Files\BlueJ\lib\bluej.jar`, but it may differ:
+3. Build the extension and run tests:
 
    ```powershell
-   cd "C:\Users\YOUR_USER\Downloads\BlueJ-Telemetry-Activity2"
-   New-Item -ItemType Directory -Force lib | Out-Null
-   Copy-Item "C:\Program Files\BlueJ\lib\bluej.jar" ".\lib\bluej.jar"
-   ```
-
-   If BlueJ is installed elsewhere, browse its installation folder and find `lib\bluej.jar`. **Do not commit this jar to GitHub.** The project references it at compile time as `system` dependency; Maven never bundles it into the output extension JAR.
-
-3. Build and test, generating JaCoCo coverage report:
-
-   ```powershell
+   Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
    .\build.ps1
    ```
 
-   Or, if you copied the BlueJ jar manually, run `mvn clean verify`.
-
-   Expected files: `target\bluej-telemetry-1.0.0.jar`, `target\site\jacoco\index.html`, and test reports in `target\surefire-reports`. `mvn clean verify` fails if the configured coverage rule is not met. A first build requires internet for Maven/JUnit/JavaFX dependencies.
-
-4. Install the extension into a BlueJ project you created:
+   The script looks for `bluej.jar` in typical BlueJ installation paths and extracted BlueJ Windows downloads. If it cannot find the file, supply its location explicitly:
 
    ```powershell
-   New-Item -ItemType Directory -Force "C:\PATH\TO\YOUR\BLUEJ_PROJECT\extensions2" | Out-Null
-   Copy-Item ".\target\bluej-telemetry-1.0.0.jar" "C:\PATH\TO\YOUR\BLUEJ_PROJECT\extensions2\"
+   .\build.ps1 -BlueJJar "C:\path\to\bluej\lib\bluej.jar"
    ```
 
-   Or put it in your global BlueJ extensions folder `C:\Users\YOUR_USER\bluej\extensions2`. **Restart BlueJ or reopen the project** to load the extension. This project uses the BlueJ 5+ `extensions2` directory, **not** the legacy `extensions` folder.
+   A successful build creates:
 
-5. Open a BlueJ project, edit Java classes, compile (including intentionally breaking/fixing a line for test evidence), and invoke methods. In BlueJ, open **Tools > Telemetry Analytics > Export JSON + PDF now**. Output is saved to `<your BlueJ project>\telemetry-reports` and is also exported when the tracked root project closes. To get a console summary, copy terminal output, choose **Tools > Telemetry Analytics > Import console output (paste summary)**, then export again.
+   - `target/bluej-telemetry-1.0.0.jar` — extension to install
+   - `target/site/jacoco/index.html` — coverage report
+   - `target/surefire-reports/` — JUnit results
 
-6. Verify the resulting JSON opens in a JSON viewer and the PDF has 2 pages. Run JUnit tests again after changes and take screenshots of `mvn clean verify`, the JaCoCo coverage report, BlueJ Tools menu and generated PDF/JSON.
+4. Create or open a BlueJ project, then make an **`extensions2`** folder inside that project directory. Copy `target/bluej-telemetry-1.0.0.jar` into it:
 
-## Verify demo exports without launching BlueJ
+   ```text
+   YourBlueJProject/
+   ├── package.bluej
+   └── extensions2/
+       └── bluej-telemetry-1.0.0.jar
+   ```
 
-The core/export packages have no third-party runtime dependencies. Use Java 21 to run `edu.uwi.bluejtelemetry.demo.DemoMain` from compiled classes, or inspect `samples/sample.json` and `samples/sample.pdf` included in the ZIP.
+5. Close and reopen the BlueJ project. The extension should appear under **Tools → Telemetry Analytics**.
 
-## Patterns and SOLID responsibilities
+## Using the extension
 
-- **Observer:** `TelemetryBus` broadcasts immutable `TelemetryEvent`s, and `SessionRecorder` subscribes.
-- **Factory Method:** `EventCreator` subclasses create and validate lifecycle, editor, compilation and execution events.
-- **Strategy:** `ReportExporter` has independent JSON and PDF strategies; `ExportService` selects both without knowing how they render.
-- **SOLID:** `SourceTracker` owns editing detection, `MetricsAggregator` calculates values, listener adapter maps BlueJ callbacks, `SessionRecorder` holds a session, exporters perform output only. The aggregator and exporter logic can be unit-tested without BlueJ's GUI.
+1. Create, edit and compile Java classes in BlueJ. Include a successful and a failed compilation to test diagnostics.
+2. Create an object and invoke a method to record supported execution activity.
+3. To include console content, copy text from the BlueJ terminal and choose **Tools → Telemetry Analytics → Import console output (paste summary)**.
+4. Select **Tools → Telemetry Analytics → Export JSON + PDF now**.
+5. Find the output files in the BlueJ project's **`telemetry-reports/`** folder. The plugin also attempts an export when the tracked project closes.
 
-## Folder structure
+The **JSON** contains session metadata (including a configurable student ID placeholder), timestamped events, compilation/error details, compile intervals, execution counts, and editing/activity estimates. The **PDF** summarizes the session in two pages using charts and tables. Examples are in [`samples/`](samples/).
+
+## Testing and coverage
+
+Run the test suite and generate the coverage report with:
+
+```powershell
+.\build.ps1
+Start-Process ".\target\site\jacoco\index.html"
+```
+
+The most recently verified local build (November 9, 2026) reported:
+
+| Measure | Result |
+| --- | ---: |
+| JUnit 5 tests | **20 passed; 0 failed** |
+| Instruction coverage | **95%** |
+| Branch coverage | **80%** |
+| Maven build | **BUILD SUCCESS** |
+
+JaCoCo enforces **at least 75% line coverage** on the testable core and export code. **Coverage percentages exclude the BlueJ GUI adapter and demo package**; these figures are not whole-project coverage. BlueJ 6.0.1 integration was also exercised manually, including compiling Java code and exporting PDF/JSON reports.
+
+## Architecture and design patterns
 
 ```text
 src/main/java/edu/uwi/bluejtelemetry/
-  bluej/      BlueJ API/JavaFX integration
-  core/       events, bus, session recorder, source sampler, metrics
-  export/     JSON and PDF strategies; background file export
-  demo/       sample session creation without BlueJ
+├── bluej/    BlueJ Extensions API adapter and menu integration
+├── core/     Events, session recorder, source sampling and metric calculations
+├── export/   JSON/PDF exporters and export service
+└── demo/     Standalone sample-session generator
+
 src/test/java/edu/uwi/bluejtelemetry/
-  core/       JUnit 5 logic tests
-  export/     JUnit 5 serialization/PDF/export tests
-docs/         updated scope and feature/limitation matrix
-samples/      demonstration JSON and PDF
+├── core/     Event, recorder, editing and metric tests
+└── export/   JSON/PDF and export-service tests
+
+docs/         Scope, feature matrix and verification notes
+samples/      Example telemetry JSON and PDF
 ```
 
-## Limitations you must explain in the demo / submission
+The design uses **three patterns (no Singleton)**:
 
-The public BlueJ Extensions API does **not** provide a direct generic keystroke listener, authoritative editor focus/idle status, standardized compiler error codes or an automatic BlueJ Terminal stdout stream. Do not claim those features are directly observed. Sampling produces estimates; `METHOD_DEFINED` uses a regex heuristic and can miss advanced Java syntax; console summaries require deliberate manual paste. BlueJ project **creation/deletion** is not directly exposed by the package opened/closing events; this plugin tracks observed opening/closing, not guaranteed creation/deletion. A class can be created/deleted between 3-second polls without detection; class removal events reduce that risk. Runtime exception event status is available but stack traces are not provided through the invocation listener.
+- **Observer:** `TelemetryBus` notifies `SessionRecorder` of telemetry events.
+- **Factory Method:** `EventCreator` produces validated event objects for different activity categories.
+- **Strategy:** `ReportExporter` defines interchangeable JSON and PDF export implementations used by `ExportService`.
 
-The JUnit tests do not replace an actual **BlueJ 6.x integration test**. Source was developed against BlueJ's documented `extensions2` API; verify compilation and menu behaviour with your installed `bluej.jar` and JDK before claiming the integration works.
+The implementation separates BlueJ integration, event recording, metric calculation and file generation to support **SOLID principles** and independently testable components.
 
-Official docs: https://www.bluej.org/extensions/writingextensions2.html and https://www.bluej.org/doc/extensionsAPI2/bluej/extensions2/package-summary.html
+## Known limitations
 
-## GitHub workflow (after the team reviews the source)
+- **Typing cadence and idle time are estimates** based on periodic editor snapshots and activity windows, not individual keystrokes or guaranteed editor-focus measurements.
+- **Console text is not captured automatically**; users must paste it through the plugin menu.
+- **Standard compiler diagnostic codes may be unavailable** through BlueJ; missing codes are represented as `null`, while messages and line numbers are recorded when supplied.
+- **Project creation/deletion is not directly exposed** as a reliable lifecycle distinction by the public extension events; project open/close events are recorded instead.
+- **Method definitions are inferred** from source text and may not identify every Java syntax form.
+- Runtime exception status is recorded where exposed by BlueJ, but full exception stack traces are not necessarily available.
 
-```powershell
-git init
-git add .
-git commit -m "Implement BlueJ telemetry baseline with tests and reports"
-git branch -M main
-git remote add origin https://github.com/YOUR-TEAM/bluej-telemetry.git
-git push -u origin main
-```
+## Documentation
 
-Assign ownership: **Member 1** BlueJ adapter/source sampling, **Member 2** data model/metrics/JSON, **Member 3** PDF/tests/integration; all three should review and merge pull requests. Never commit student identifiers, telemetry data, BlueJ's proprietary installation jar or passwords.
+- [Project scope](docs/UPDATED_SCOPE.md)
+- [Requirement and limitation matrix](docs/FEATURE_MATRIX.md)
+- [Fixes and verification notes](docs/FIXES_AND_VERIFICATION.md)
+- [BlueJ Extensions API documentation](https://www.bluej.org/extensions/writingextensions2.html)
+
+## Team and academic context
+
+Built as a **three-member team project** for COMP3607 at UWI St. Augustine. Add the names and contributions of the three team members here before final submission.
+
+**Note:** `STUDENT_ID_PLACEHOLDER` is intentional as a default metadata value. Avoid committing personal student data or real student telemetry to a public repository without permission.
